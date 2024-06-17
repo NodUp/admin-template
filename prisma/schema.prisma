@@ -1,0 +1,131 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id            String          @id @default(cuid())
+  email         String          @unique
+  password      String
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime?       @updatedAt
+  status        UserStatus      @default(PENDENTE)
+  role          Roles           @default(COMUM)
+  person        Persons[]
+  companyId     String
+  company       Companies?    @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "companies_companyId_foreign")
+}
+
+model Persons {
+  id      String    @id @default(cuid())
+  name    String
+  cpf     String?   @unique
+  tel     String?
+  userId  String
+  user    Users?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "persons_userId_foreign")
+  stateId String?
+  state   States?   @relation(fields: [stateId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "state_stateId_foreign")
+  cityId  String?
+  city    Cities?   @relation(fields: [cityId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "city_cityId_foreign")
+}
+
+model Products {
+  id        String     @id @default(cuid())
+  name      String
+  stock     Stocks[]
+  entry     Entries[]
+  departure Departuries[]
+  companyId String
+  company   Companies?    @relation(fields: [companyId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "companies_companyId_foreign")
+}
+
+model Stocks {
+  id        String      @id @default(cuid())
+  qtd       Decimal
+  productId String
+  product   Products?   @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "stockk_productId_foreign")
+}
+
+model Entries {
+  id              String     @id @default(cuid())
+  transportation  String?
+  arrivalDate     DateTime?
+  departureDate   DateTime?
+  container       String?
+  invoice         String?
+  damage          String?
+  qtd             Decimal?
+  createAt        DateTime?
+  updateAt        DateTime?
+  status          EntriesStatus?
+  productId       String
+  product         Products?  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "entries_productId_foreign")
+}
+
+model Departuries {
+  id            String     @id @default(cuid())
+  departureDate DateTime?
+  invoice       String?
+  client        String?
+  value         Decimal?
+  total         Decimal?
+  qtd           Decimal?
+  createAt      DateTime?
+  updateAt      DateTime?
+  status        DeparturiesStatus?
+  productId     String
+  product       Products?  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "departuries_productId_foreign")
+}
+
+model States {
+  id        String     @id @default(cuid())
+  name      String
+  acronym   String
+  cities    Cities[]
+  person    Persons[]
+}
+
+model Cities {
+  id        String      @id @default(cuid())
+  name      String
+  stateId   String
+  state     States?     @relation(fields: [stateId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "state_stateId_foreign")
+  person    Persons[]
+}
+
+model Companies {
+  id        String      @id @default(cuid())
+  name      String
+  logo      String?
+  createdAt DateTime?
+  user      Users[]
+  product   Products[]
+}
+
+enum DeparturiesStatus {
+  INICIADO
+  FINALIZADO
+}
+
+enum Roles {
+  ADMIN
+  COMUM
+}
+
+enum EntriesStatus {
+  LOCAL
+  TRANSITO
+}
+
+enum UserStatus {
+  PENDENTE
+  ATIVO
+  INATIVO
+}
