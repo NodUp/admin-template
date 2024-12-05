@@ -11,6 +11,7 @@ import { FormHeader } from '@/components/ui/containers/form-header';
 import { ErrorMessage } from '@hookform/error-message';
 import { changePassword } from '@/actions/users';
 import { useToast } from '@/components/ui/use-toast';
+import { useMyToast } from '@/components/ui/use-toast';
 
 import * as z from 'zod';
 
@@ -39,19 +40,14 @@ export default function ChangePasswordForm({ userId }: Props) {
   } = useForm({
     resolver: zodResolver(schema),
   });
-  const { toast } = useToast();
+
+  const { save } = useSavePassword();
 
   const onSubmit = async (data: any) => {
-    await changePassword(userId ? userId : '', data.password);
-
+    await save(userId, data.password);
     reset();
-
-    toast({
-      title: 'Sucesso !',
-      description: 'Operação realizada!',
-      variant: 'constructive',
-    });
   };
+
   return (
     <Container className='w-[400px]'>
       <FormHeader title='Esqueceu a senha?' />
@@ -102,4 +98,19 @@ export default function ChangePasswordForm({ userId }: Props) {
       </form>
     </Container>
   );
+}
+
+// lógica do componente
+
+export function useSavePassword() {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (userId: any, password: string) => {
+    const { success } = await changePassword(userId ? userId : '', password);
+    success
+      ? sucessMessage('Senha atualizada!')
+      : errorMessage('Erro ao salvar os dados!');
+  };
+
+  return { save };
 }

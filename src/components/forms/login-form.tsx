@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import { loginWeb } from '@/actions/session';
 import { useToast } from '../ui/use-toast';
+import { useMyToast } from '../ui/use-toast';
 
 const schema = z.object({
   email: z
@@ -28,17 +29,14 @@ export default function LoginForm() {
   } = useForm({
     resolver: zodResolver(schema),
   });
-  const { toast } = useToast();
+
+  const { errorMessage } = useMyToast();
 
   const onSubmit = async (data: any) => {
-    const isErrorLogin = await loginWeb(data);
+    const { error } = await loginWeb(data);
 
-    if (isErrorLogin) {
-      toast({
-        title: 'Erro',
-        description: isErrorLogin.error,
-        variant: 'destructive',
-      });
+    if (error) {
+      errorMessage(error);
     }
   };
 

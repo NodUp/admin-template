@@ -54,73 +54,105 @@ export const login = async (email: string, password: string) => {
   return null;
 };
 
-export async function addUser(formData: User) {
-  await prisma.$transaction(async (tx: any) => {
-    let companyId: any = await getCompanyId();
+export async function addUser(
+  formData: User
+): Promise<{ success: boolean; data: any }> {
+  try {
+    const user = await prisma.$transaction(async (tx: any) => {
+      let companyId: any = await getCompanyId();
 
-    if (!companyId) {
-      companyId = await getCompanyIdDefault();
-    }
+      if (!companyId) {
+        companyId = await getCompanyIdDefault();
+      }
 
-    const encryptedPassword = await bcrypt.hash(formData.password, 8);
-    const user = await tx.users.create({
-      data: {
-        role: formData.role ? formData.role : 'COMUM',
-        email: formData.email,
-        password: encryptedPassword,
-        status: formData.status,
-        companyId,
-      },
+      const encryptedPassword = await bcrypt.hash(formData.password, 8);
+      const user = await tx.users.create({
+        data: {
+          role: formData.role ? formData.role : 'COMUM',
+          email: formData.email,
+          password: encryptedPassword,
+          status: formData.status,
+          companyId,
+        },
+      });
+
+      await tx.persons.create({
+        data: {
+          name: formData.name,
+          userId: user.id,
+          stateId: formData.stateId,
+          cityId: formData.cityId,
+        },
+      });
+
+      return user;
     });
 
-    await tx.persons.create({
-      data: {
-        name: formData.name,
-        userId: user.id,
-        stateId: formData.stateId,
-        cityId: formData.cityId,
-      },
-    });
+    revalidatePath('/admin/users/*');
 
-    return user;
-  });
-  revalidatePath('/admin/users/*');
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 }
 
-export async function editUser(id: string, formData: User) {
+export async function editUser(
+  id: string,
+  formData: User
+): Promise<{ success: boolean; data: any }> {
   const { name, email, role, cityId, stateId, status } = formData;
 
-  const person = await prisma.persons.findMany({
-    where: {
-      userId: id,
-    },
-  });
-
-  await prisma.$transaction(async (tx: any) => {
-    await tx.persons.update({
-      data: {
-        name,
-        cityId,
-        stateId,
-      },
+  try {
+    const person = await prisma.persons.findMany({
       where: {
-        id: person[0].id,
+        userId: id,
       },
     });
 
-    await tx.users.update({
-      data: {
-        email,
-        status,
-        role,
-      },
-      where: {
-        id,
-      },
-    });
-  });
+    const user = await prisma.$transaction(async (tx: any) => {
+      await tx.persons.update({
+        data: {
+          name,
+          cityId,
+          stateId,
+        },
+        where: {
+          id: person[0].id,
+        },
+      });
 
-  revalidatePath('/admin/users/*');
+      const user = await tx.users.update({
+        data: {
+          email,
+          status,
+          role,
+        },
+        where: {
+          id,
+        },
+      });
+
+      return user;
+    });
+
+    revalidatePath('/admin/users/*');
+
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 }
 
 export async function findAllusers(): Promise<any[]> {
@@ -195,12 +227,24 @@ export async function forgotPassword(email: string) {
 export async function changePassword(id: string, newPassword: string) {
   const encryptedPassword = await bcrypt.hash(newPassword, 8);
 
-  await prisma.users.update({
-    where: {
-      id,
-    },
-    data: {
-      password: encryptedPassword,
-    },
-  });
+  try {
+    const user = await prisma.users.update({
+      where: {
+        id,
+      },
+      data: {
+        password: encryptedPassword,
+      },
+    });
+
+    return {
+      success: true,
+      data: user,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 }

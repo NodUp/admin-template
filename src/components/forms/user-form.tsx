@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form';
 import { SelectInput } from '@/components/ui/select/select';
 import { addUser } from '@/actions/users';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useMyToast, useToast } from '@/components/ui/use-toast';
 import { editUser } from '@/actions/users';
 import { getAllCities } from '@/actions/cities';
 import { FormHeader } from '@/components/ui/containers/form-header';
@@ -80,7 +80,8 @@ type Props = {
 };
 
 function UserForm({ user, roles, states, cities, status, context }: Props) {
-  const [citiesList, setCitieslist] = useState(cities);
+  const { citiesList, updateCities } = useCities(cities);
+  const { save } = useAddOrUpdate(context);
 
   const {
     register,
@@ -91,37 +92,18 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
   } = useForm({
     resolver: zodResolver(user ? updateSchema : createSchema),
     defaultValues: {
-      name: user ? user.person[0].name : '',
-      email: user ? user.email : '',
-      role: user ? user.role : '',
-      stateId: user ? user.person[0].stateId : '',
-      cityId: user ? user.person[0].cityId : '',
-      status: user ? user.status : '',
+      name: user?.person?.[0]?.name || '',
+      email: user?.email || '',
+      role: user?.role || '',
+      stateId: user?.person?.[0]?.stateId || '',
+      cityId: user?.person?.[0]?.cityId || '',
+      status: user?.status || '',
     },
   });
-  const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
-    if (!user) {
-      addUser({
-        ...data,
-        status: context === 'admin' ? 'ATIVO' : 'PENDENTE',
-      });
-      reset();
-    } else {
-      await editUser(user.id, data);
-    }
-
-    toast({
-      title: 'Sucesso !',
-      description: 'Operação realizada!',
-      variant: 'constructive',
-    });
-  };
-
-  const loadCities = async (stateId: string) => {
-    const cities: any = await getAllCities(stateId);
-    setCitieslist(cities);
+    await save(user, data);
+    reset();
   };
 
   return (
@@ -171,7 +153,7 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
             control={control}
             name='stateId'
             items={states}
-            func={loadCities}
+            func={updateCities}
           />
 
           <Label className=''>Cidade:</Label>
@@ -236,3 +218,35 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
 }
 
 export default UserForm;
+
+export function useAddOrUpdate(context: string) {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (obj: any, data: any) => {
+    if (!obj) {
+      const { success } = await addUser({
+        ...data,
+        status: context === 'admin' ? 'ATIVO' : 'PENDENTE',
+      });
+      success
+        ? sucessMessage('Usuário cadastrado!')
+        : errorMessage('Erro ao efetuar o cadastro');
+    } else {
+      const { success: editSuccess } = await editUser(obj.id, data);
+      editSuccess
+        ? sucessMessage('Usuário editado!')
+        : errorMessage('Erro ao efetuar a edição');
+    }
+  };
+
+  return { save };
+}
+
+export function useCities(cities: any) {
+  const [citiesList, setCitieslist] = useState(cities);
+
+  const updateCities = async (stateId: string) => {
+    setCitieslist(await getAllCities(stateId));
+  };
+  return { citiesList, updateCities };
+}
