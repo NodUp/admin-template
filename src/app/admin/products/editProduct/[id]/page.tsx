@@ -1,21 +1,15 @@
-import PathComponent from '@/components/ui/containers/path-component';
-import ProductForm from '@/components/forms/product-form';
+import LoadingPage from '@/app/loading';
+import { Suspense } from 'react';
+import EditProductContainer from '@/components/ui/containers/pages/edit-product-container';
 
-import { getProductById } from '@/actions/products';
-
-import type { Products } from '@/components/columns/columns-products-table';
-
-export default async function EditProduct({
+export default async function EditProductPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const product: Products | null = await getProductById(params.id);
-
   return (
-    <div>
-      <PathComponent />
-      <ProductForm product={product} />
-    </div>
+    <Suspense fallback={<LoadingPage />}>
+      <EditProductContainer id={params.id} />
+    </Suspense>
   );
 }

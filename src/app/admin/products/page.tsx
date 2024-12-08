@@ -1,26 +1,11 @@
-import { DataTable } from '@/components/ui/data-table';
-import PathComponent from '@/components/ui/containers/path-component';
-import {
-  Products as ProductType,
-  columns,
-} from '@/components/columns/columns-products-table';
-import { getProducts } from '@/actions/products';
+import LoadingPage from '@/app/loading';
+import { Suspense } from 'react';
+import ListProductsContainer from '@/components/ui/containers/pages/list-product-container';
 
-export default async function Products() {
-  const data: ProductType[] = await getProducts();
-
+export default async function ProductsPage() {
   return (
-    <div>
-      <PathComponent />
-
-      <div className='mt-4 flex justify-center'>
-        <DataTable
-          columns={columns}
-          data={data}
-          addPath='/admin/products/addProduct'
-          title='Produtos'
-        />
-      </div>
-    </div>
+    <Suspense fallback={<LoadingPage />}>
+      <ListProductsContainer />
+    </Suspense>
   );
 }
