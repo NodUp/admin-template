@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { addProduct } from '@/actions/products';
 import { editProduct } from '@/actions/products';
-import { useToast } from '@/components/ui/use-toast';
+import { useMyToast } from '@/components/ui/use-toast';
 
 import type { Products } from '@/components/columns/columns-products-table';
 
@@ -26,7 +26,7 @@ type Props = {
   product: Products | null;
 };
 
-export default function AddProductForm({ product }: Props) {
+export default function ProductForm({ product }: Props) {
   const {
     register,
     handleSubmit,
@@ -39,20 +39,11 @@ export default function AddProductForm({ product }: Props) {
     },
   });
 
-  const { toast } = useToast();
+  const { save } = useSave();
 
   const onSubmit = async (data: any) => {
-    if (product) {
-      editProduct({ id: product.id, name: data.name });
-    } else {
-      addProduct(data);
-      reset();
-    }
-    toast({
-      title: 'Sucesso !',
-      description: 'Dados cadastrados.',
-      variant: 'constructive',
-    });
+    await save(product, data);
+    reset();
   };
 
   return (
@@ -86,4 +77,27 @@ export default function AddProductForm({ product }: Props) {
       </form>
     </Container>
   );
+}
+
+export function useSave() {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (obj: any, data: any) => {
+    if (!obj) {
+      const { success } = await addProduct(data);
+      success
+        ? sucessMessage('Usuário cadastrado!')
+        : errorMessage('Erro ao efetuar o cadastro');
+    } else {
+      const { success: editSuccess } = await editProduct({
+        id: obj.id,
+        name: data.name,
+      });
+      editSuccess
+        ? sucessMessage('Usuário editado!')
+        : errorMessage('Erro ao efetuar a edição');
+    }
+  };
+
+  return { save };
 }

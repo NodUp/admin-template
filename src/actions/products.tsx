@@ -46,18 +46,30 @@ export const addProduct = async (formData: any) => {
   const { name } = formData;
   const companyId = await getCompanyId();
 
-  await prisma.products.create({
-    data: {
-      name: name,
-      companyId,
-      stock: {
-        create: {
-          qtd: 0,
+  try {
+    const product = await prisma.products.create({
+      data: {
+        name: name,
+        companyId,
+        stock: {
+          create: {
+            qtd: 0,
+          },
         },
       },
-    },
-  });
-  revalidatePath('/admin/products/*');
+    });
+    revalidatePath('/admin/products/*');
+
+    return {
+      success: true,
+      data: product,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const getProductById = async (id: string): Promise<Products | null> => {
@@ -71,13 +83,24 @@ export const getProductById = async (id: string): Promise<Products | null> => {
 };
 
 export const editProduct = async (product: any) => {
-  await prisma.products.update({
-    data: product,
-    where: {
-      id: product.id,
-    },
-  });
-  revalidatePath('/admin/products/*');
+  try {
+    const productDb = await prisma.products.update({
+      data: product,
+      where: {
+        id: product.id,
+      },
+    });
+    revalidatePath('/admin/products/*');
+    return {
+      success: true,
+      data: productDb,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const deleteProduct = async (id: string) => {

@@ -2,7 +2,11 @@ import EditUserContainer from '@/components/ui/containers/pages/edit-user-contai
 import LoadingPage from '@/app/loading';
 import { Suspense } from 'react';
 
-export default async function EditUser({ params }: { params: { id: string } }) {
+export default async function EditUserPage({
+  params,
+}: {
+  params: { id: string };
+}) {
   return (
     <div>
       <Suspense fallback={<LoadingPage />}>

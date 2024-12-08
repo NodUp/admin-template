@@ -81,7 +81,7 @@ type Props = {
 
 function UserForm({ user, roles, states, cities, status, context }: Props) {
   const { citiesList, updateCities } = useCities(cities);
-  const { save } = useAddOrUpdate(context);
+  const { save } = useSave(context);
 
   const {
     register,
@@ -219,7 +219,7 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
 
 export default UserForm;
 
-export function useAddOrUpdate(context: string) {
+export function useSave(context: string) {
   const { sucessMessage, errorMessage } = useMyToast();
 
   const save = async (obj: any, data: any) => {

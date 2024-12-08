@@ -1,5 +1,5 @@
 import PathComponent from '@/components/ui/containers/path-component';
-import AddProductForm from '@/components/forms/product-form';
+import ProductForm from '@/components/forms/product-form';
 
 import { getProductById } from '@/actions/products';
 
@@ -15,7 +15,7 @@ export default async function EditProduct({
   return (
     <div>
       <PathComponent />
-      <AddProductForm product={product} />
+      <ProductForm product={product} />
     </div>
   );
 }
