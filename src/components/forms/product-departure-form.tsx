@@ -193,7 +193,7 @@ function AddProductDepartureForm({ departure, products, status }: Props) {
             errors={errors}
             placeholder='Quantidade'
             variant='mask'
-            mask='99999999'
+            mask={[/\d/, /\d/, /\d/]}
           />
 
           <Label className=''>Status:</Label>

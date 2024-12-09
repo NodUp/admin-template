@@ -170,7 +170,7 @@ function AddProductEntryForm({ entry, products, status }: Props) {
             errors={errors}
             placeholder='Total'
             variant='mask'
-            mask='99999999'
+            mask={[/\d/, /\d/, /\d/]}
           />
 
           <Label className=''>Status:</Label>
