@@ -1,18 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 'use client';
 
-import { Container } from '@/components/ui/containers/content-container';
-import { Label } from '@/components/ui/label';
+import { addEntry, updateEntry } from '@/actions/entry';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/ui/containers/content-container';
 import { GridContainer } from '@/components/ui/containers/grid-container';
-import { Input } from '@/components/ui/input/index';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { SelectInput } from '@/components/ui/select/select';
 import { DatePicker } from '@/components/ui/data-picker';
-import { addEntry } from '@/actions/entry';
-import { useToast } from '@/components/ui/use-toast';
-import { updateEntry } from '@/actions/entry';
+import { Input } from '@/components/ui/input/index';
+import { Label } from '@/components/ui/label';
+import { SelectInput } from '@/components/ui/select/select';
+import { useMyToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 
 import * as z from 'zod';
 
@@ -52,13 +52,10 @@ type Props = {
 };
 
 function AddProductEntryForm({ entry, products, status }: Props) {
-  const { toast } = useToast();
   const {
     register,
     handleSubmit,
-    reset,
     control,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
@@ -75,25 +72,12 @@ function AddProductEntryForm({ entry, products, status }: Props) {
     },
   });
 
-  const clear = () => {
-    reset();
-    setValue('qtd', '');
-    setValue('productId', '');
-    setValue('status', '');
-  };
+  const router = useRouter();
+  const { save } = useSave();
 
   const onSubmit = async (data: any) => {
-    if (entry) {
-      await updateEntry(data, entry.id);
-    } else {
-      await addEntry(data);
-      clear();
-    }
-    toast({
-      title: 'Sucesso !',
-      description: 'Dados cadastrados.',
-      variant: 'constructive',
-    });
+    await save(entry, data);
+    router.back();
   };
 
   return (
@@ -197,3 +181,23 @@ function AddProductEntryForm({ entry, products, status }: Props) {
 }
 
 export default AddProductEntryForm;
+
+function useSave() {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (obj: any, data: any) => {
+    if (!obj) {
+      const { success } = await addEntry(data);
+      success
+        ? sucessMessage('Produto cadastrado!')
+        : errorMessage('Erro ao efetuar o cadastro');
+    } else {
+      const { success: editSuccess } = await updateEntry(data, obj.id);
+      editSuccess
+        ? sucessMessage('Produto editado!')
+        : errorMessage('Erro ao efetuar a edição');
+    }
+  };
+
+  return { save };
+}

@@ -1,10 +1,9 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
-import { prisma } from '../lib/prisma';
-
 import { toJson } from '@/utils';
 import type { Products } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
+import { prisma } from '../lib/prisma';
 import { getCompanyId } from './companies';
 
 export const getProducts = async (): Promise<Products[]> => {
@@ -63,7 +62,7 @@ export const addProduct = async (formData: any) => {
 
     return {
       success: true,
-      data: product,
+      data: toJson(product),
     };
   } catch (error) {
     return {
@@ -80,7 +79,7 @@ export const getProductById = async (id: string): Promise<Products | null> => {
     },
   });
 
-  return product;
+  return toJson(product);
 };
 
 export const editProduct = async (product: any) => {
@@ -94,7 +93,7 @@ export const editProduct = async (product: any) => {
     revalidatePath('/admin/products/*');
     return {
       success: true,
-      data: productDb,
+      data: toJson(productDb),
     };
   } catch (error) {
     return {
@@ -125,15 +124,4 @@ export const deleteProduct = async (id: string) => {
     });
   });
   revalidatePath('/admin/products/*');
-};
-
-export const getAllMovimentations = async (id: string) => {
-  const result = await prisma.$queryRaw`
-    select * from (
-      select 'Entrada' as tipo, qtd, "updateAt", '' as client from "Entries" e where "productId" = ${id}
-      union all 
-      select 'Saída' as tipo, qtd, "updateAt", client  from "Departuries" d where "productId" = ${id}
-    ) as subquery order by "updateAt" desc`;
-
-  return JSON.parse(JSON.stringify(result));
 };

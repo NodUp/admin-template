@@ -1,15 +1,15 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input/index';
+import { addProduct, editProduct } from '@/actions/products';
+import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/containers/content-container';
 import { GridContainer } from '@/components/ui/containers/grid-container';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { addProduct } from '@/actions/products';
-import { editProduct } from '@/actions/products';
+import { Input } from '@/components/ui/input/index';
+import { Label } from '@/components/ui/label';
 import { useMyToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 
 import type { Products } from '@/components/columns/columns-products-table';
 
@@ -30,7 +30,6 @@ export default function ProductForm({ product }: Props) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
@@ -40,10 +39,11 @@ export default function ProductForm({ product }: Props) {
   });
 
   const { save } = useSave();
+  const router = useRouter();
 
   const onSubmit = async (data: any) => {
     await save(product, data);
-    reset();
+    router.back();
   };
 
   return (
@@ -86,7 +86,7 @@ export function useSave() {
     if (!obj) {
       const { success } = await addProduct(data);
       success
-        ? sucessMessage('Usuário cadastrado!')
+        ? sucessMessage('Produto cadastrado!')
         : errorMessage('Erro ao efetuar o cadastro');
     } else {
       const { success: editSuccess } = await editProduct({
@@ -94,7 +94,7 @@ export function useSave() {
         name: data.name,
       });
       editSuccess
-        ? sucessMessage('Usuário editado!')
+        ? sucessMessage('Produto editado!')
         : errorMessage('Erro ao efetuar a edição');
     }
   };

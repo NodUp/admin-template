@@ -1,13 +1,12 @@
 'use server';
 
-import { prisma } from '../lib/prisma';
-const bcrypt = require('bcrypt');
-import { getString } from '@/utils';
+import { getString, toJson } from '@/utils';
+import { Roles, UserStatus } from '@prisma/client';
 import { revalidatePath } from 'next/cache';
-import { UserStatus, Roles } from '@prisma/client';
+import { prisma } from '../lib/prisma';
+import { getCompanyId, getCompanyIdDefault } from './companies';
 import { sendEmail } from './email';
-import { getCompanyId } from './companies';
-import { getCompanyIdDefault } from './companies';
+const bcrypt = require('bcrypt');
 
 type User = {
   name: string;
@@ -158,7 +157,7 @@ export async function editUser(
 export async function findAllusers(): Promise<any[]> {
   const companyId = await getCompanyId();
 
-  return await prisma.users.findMany({
+  const usersDb = await prisma.users.findMany({
     where: {
       companyId,
     },
@@ -166,10 +165,12 @@ export async function findAllusers(): Promise<any[]> {
       person: true,
     },
   });
+
+  return toJson(usersDb);
 }
 
 export async function findById(id: string): Promise<any> {
-  return await prisma.users.findUnique({
+  const userDb = await prisma.users.findUnique({
     where: {
       id,
     },
@@ -177,6 +178,8 @@ export async function findById(id: string): Promise<any> {
       person: true,
     },
   });
+
+  return toJson(userDb);
 }
 
 export async function deleteUser(id: string) {
@@ -193,35 +196,47 @@ export async function deleteUser(id: string) {
 }
 
 export async function forgotPassword(email: string) {
-  const user = await prisma.users.findUnique({
-    where: {
+  try {
+    const user = await prisma.users.findUnique({
+      where: {
+        email,
+      },
+      include: {
+        person: true,
+      },
+    });
+
+    const newPassword = await getString(8);
+
+    const encryptedPassword = await bcrypt.hash(newPassword, 8);
+
+    await prisma.users.update({
+      where: {
+        id: user?.id,
+      },
+      data: {
+        password: encryptedPassword,
+      },
+    });
+
+    sendEmail(
       email,
-    },
-    include: {
-      person: true,
-    },
-  });
+      'Recueração de Senha',
+      `Olá, ${user?.person[0].name}`,
+      `Você solicitou uma nova senha. Sua nova senha é: ${newPassword}`,
+      'Este e-mail foi gerado automaticamente pelo sistema e não deve ser respondido.'
+    );
 
-  const newPassword = await getString(8);
-
-  const encryptedPassword = await bcrypt.hash(newPassword, 8);
-
-  await prisma.users.update({
-    where: {
-      id: user?.id,
-    },
-    data: {
-      password: encryptedPassword,
-    },
-  });
-
-  sendEmail(
-    email,
-    'Recueração de Senha',
-    `Olá, ${user?.person[0].name}`,
-    `Você solicitou uma nova senha. Sua nova senha é: ${newPassword}`,
-    'Este e-mail foi gerado automaticamente pelo sistema e não deve ser respondido.'
-  );
+    return {
+      success: true,
+      data: null,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 }
 
 export async function changePassword(id: string, newPassword: string) {

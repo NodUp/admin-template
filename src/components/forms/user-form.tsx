@@ -2,26 +2,24 @@
 
 import { useState } from 'react';
 
+import { getAllCities } from '@/actions/cities';
+import { addUser, editUser } from '@/actions/users';
+import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/containers/content-container';
-import { Label } from '@/components/ui/label';
+import { FormHeader } from '@/components/ui/containers/form-header';
 import { GridContainer } from '@/components/ui/containers/grid-container';
 import { Input } from '@/components/ui/input/index';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Label } from '@/components/ui/label';
 import { SelectInput } from '@/components/ui/select/select';
-import { addUser } from '@/actions/users';
-import { Button } from '@/components/ui/button';
-import { useMyToast, useToast } from '@/components/ui/use-toast';
-import { editUser } from '@/actions/users';
-import { getAllCities } from '@/actions/cities';
-import { FormHeader } from '@/components/ui/containers/form-header';
-
+import { useMyToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import type { Roles } from '@/actions/roles';
 import type { Status } from '@/actions/status';
-import type { States } from '@prisma/client';
-import type { Cities } from '@prisma/client';
+import type { Cities, States } from '@prisma/client';
 
 const createSchema = z
   .object({
@@ -82,6 +80,7 @@ type Props = {
 function UserForm({ user, roles, states, cities, status, context }: Props) {
   const { citiesList, updateCities } = useCities(cities);
   const { save } = useSave(context);
+  const router = useRouter();
 
   const {
     register,
@@ -103,7 +102,7 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
 
   const onSubmit = async (data: any) => {
     await save(user, data);
-    reset();
+    router.back();
   };
 
   return (

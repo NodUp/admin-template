@@ -1,15 +1,15 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
+import { forgotPassword } from '@/actions/users';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input/index';
 import { Container } from '@/components/ui/containers/content-container';
+import { FormHeader } from '@/components/ui/containers/form-header';
 import { GridContainer } from '@/components/ui/containers/grid-container';
+import { Input } from '@/components/ui/input/index';
+import { Label } from '@/components/ui/label';
+import { useMyToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { FormHeader } from '@/components/ui/containers/form-header';
-import { forgotPassword } from '@/actions/users';
-import { useToast } from '@/components/ui/use-toast';
 
 import * as z from 'zod';
 
@@ -30,21 +30,12 @@ export default function ForgotPasswordForm() {
     resolver: zodResolver(schema),
   });
 
-  const { toast } = useToast();
-
+  const { save } = useSave();
   const onSubmit = async (data: any) => {
-    const { email } = data;
-
-    forgotPassword(email);
-
+    await save(data);
     reset();
-
-    toast({
-      title: 'Sucesso !',
-      description: 'Operação realizada!',
-      variant: 'constructive',
-    });
   };
+
   return (
     <Container className='w-[400px]'>
       <FormHeader title='Esqueceu a senha?' />
@@ -73,4 +64,20 @@ export default function ForgotPasswordForm() {
       </form>
     </Container>
   );
+}
+
+export function useSave() {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (data: any) => {
+    const { email } = data;
+
+    const { success } = await forgotPassword(email);
+
+    success
+      ? sucessMessage('Email com nova senha enviado!')
+      : errorMessage('Erro ao salvar os dados!');
+  };
+
+  return { save };
 }

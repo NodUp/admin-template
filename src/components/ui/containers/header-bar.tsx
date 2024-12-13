@@ -1,10 +1,7 @@
-import React from 'react';
-
+import { getSession, logout } from '@/actions/session';
 import Avatar from '@/assets/avatar';
-import Image from 'next/image';
-import { logout } from '@/actions/session';
-import { getSession } from '@/actions/session';
 import { SessionData } from '@/lib/session';
+import Image from 'next/image';
 
 import {
   DropdownMenu,
@@ -50,7 +47,7 @@ const HeaderBar = async () => {
               </DropdownMenuItem>
             </Link>
             <Link href='/admin/users/changepassword'>
-              <DropdownMenuItem onClick={logout} className='cursor-pointer'>
+              <DropdownMenuItem className='cursor-pointer'>
                 Alterar senha
               </DropdownMenuItem>
             </Link>

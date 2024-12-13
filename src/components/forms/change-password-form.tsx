@@ -1,17 +1,16 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
+import { changePassword } from '@/actions/users';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input/index';
 import { Container } from '@/components/ui/containers/content-container';
+import { FormHeader } from '@/components/ui/containers/form-header';
 import { GridContainer } from '@/components/ui/containers/grid-container';
+import { Input } from '@/components/ui/input/index';
+import { Label } from '@/components/ui/label';
+import { useMyToast } from '@/components/ui/use-toast';
+import { ErrorMessage } from '@hookform/error-message';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { FormHeader } from '@/components/ui/containers/form-header';
-import { ErrorMessage } from '@hookform/error-message';
-import { changePassword } from '@/actions/users';
-import { useToast } from '@/components/ui/use-toast';
-import { useMyToast } from '@/components/ui/use-toast';
 
 import * as z from 'zod';
 
@@ -41,7 +40,7 @@ export default function ChangePasswordForm({ userId }: Props) {
     resolver: zodResolver(schema),
   });
 
-  const { save } = useSavePassword();
+  const { save } = useSave();
 
   const onSubmit = async (data: any) => {
     await save(userId, data.password);
@@ -102,7 +101,7 @@ export default function ChangePasswordForm({ userId }: Props) {
 
 // lógica do componente
 
-export function useSavePassword() {
+export function useSave() {
   const { sucessMessage, errorMessage } = useMyToast();
 
   const save = async (userId: any, password: string) => {

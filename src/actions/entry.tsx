@@ -82,34 +82,45 @@ export const addEntry = async (formData: any) => {
     status,
     qtd,
   } = formData;
+  try {
+    const entryDb = await prisma.entries.create({
+      data: {
+        productId,
+        departureDate,
+        arrivalDate,
+        transportation,
+        container,
+        invoice,
+        damage,
+        status,
+        qtd: parseInt(qtd.trim()),
+        createAt: new Date(),
+        updateAt: new Date(),
+      },
+    });
 
-  await prisma.entries.create({
-    data: {
-      productId,
-      departureDate,
-      arrivalDate,
-      transportation,
-      container,
-      invoice,
-      damage,
-      status,
-      qtd: parseInt(qtd.trim()),
-      createAt: new Date(),
-      updateAt: new Date(),
-    },
-  });
+    await prisma.stocks.updateMany({
+      where: {
+        productId,
+      },
+      data: {
+        qtd: await getSockValue('add', '', productId, qtd),
+      },
+    });
 
-  await prisma.stocks.updateMany({
-    where: {
-      productId,
-    },
-    data: {
-      qtd: await getSockValue('add', '', productId, qtd),
-    },
-  });
+    updateData(productId);
+    revalidatePath('/admin/products/*');
 
-  updateData(productId);
-  revalidatePath('/admin/products/*');
+    return {
+      success: true,
+      data: toJson(entryDb),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const updateEntry = async (formData: any, id: string) => {
@@ -125,37 +136,49 @@ export const updateEntry = async (formData: any, id: string) => {
     qtd,
   } = formData;
 
-  const stockValue = await getSockValue('update', id, productId, qtd);
+  try {
+    const stockValue = await getSockValue('update', id, productId, qtd);
 
-  await prisma.entries.update({
-    where: {
-      id,
-    },
-    data: {
-      productId,
-      departureDate,
-      arrivalDate,
-      transportation,
-      container,
-      invoice,
-      damage,
-      status,
-      qtd: parseInt(qtd.trim()),
-      updateAt: new Date(),
-    },
-  });
+    const entryDb = await prisma.entries.update({
+      where: {
+        id,
+      },
+      data: {
+        productId,
+        departureDate,
+        arrivalDate,
+        transportation,
+        container,
+        invoice,
+        damage,
+        status,
+        qtd: parseInt(qtd.trim()),
+        updateAt: new Date(),
+      },
+    });
 
-  await prisma.stocks.updateMany({
-    where: {
-      productId,
-    },
-    data: {
-      qtd: stockValue,
-    },
-  });
+    await prisma.stocks.updateMany({
+      where: {
+        productId,
+      },
+      data: {
+        qtd: stockValue,
+      },
+    });
 
-  updateData(productId);
-  revalidatePath('/admin/products/*');
+    updateData(productId);
+    revalidatePath('/admin/products/*');
+
+    return {
+      success: true,
+      data: toJson(entryDb),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const getEntries = async () => {
