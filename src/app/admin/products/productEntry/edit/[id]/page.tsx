@@ -1,17 +1,25 @@
-import PathComponent from '@/components/ui/containers/path-component';
-import AddProductEntryForm from '@/components/forms/product-entry-form';
 import { getEntryById } from '@/actions/entry';
 import { getOnlyProducts } from '@/actions/products';
 import { getAllEntriesStatus } from '@/actions/status';
+import { LoadingPage } from '@/app/loading';
+import AddProductEntryForm from '@/components/forms/product-entry-form';
+import PathComponent from '@/components/ui/containers/path-component';
+import { Suspense } from 'react';
 
-export default async function EditEntry({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const entry: any = await getEntryById(params.id);
-  const products = await getOnlyProducts();
-  const status = await getAllEntriesStatus();
+export default function EditEntryPage({ params }: { params: { id: string } }) {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <EditEntryContainer id={params.id} />
+    </Suspense>
+  );
+}
+
+async function EditEntryContainer({ id }: { id: string }) {
+  const [entry, products, status] = await Promise.all([
+    getEntryById(id),
+    getOnlyProducts(),
+    getAllEntriesStatus(),
+  ]);
 
   return (
     <div>

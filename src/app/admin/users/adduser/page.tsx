@@ -1,17 +1,28 @@
+import { LoadingPage } from '@/app/loading';
+
+import { Suspense } from 'react';
+
 import UserForm from '@/components/forms/user-form';
 import PathComponent from '@/components/ui/containers/path-component';
+
 import { getAllRoles } from '@/actions/roles';
 import { getAllStates } from '@/actions/states';
 import { getAllStatus } from '@/actions/status';
 
-import type { Roles } from '@/actions/roles';
-import type { Status } from '@/actions/status';
-import type { States } from '@prisma/client';
+export default function AddUserPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <AddUserContainer />
+    </Suspense>
+  );
+}
 
-export default async function AddUser() {
-  const roles: Roles[] = await getAllRoles();
-  const states: States[] = await getAllStates();
-  const status: Status[] = await getAllStatus();
+async function AddUserContainer() {
+  const [roles, states, status] = await Promise.all([
+    getAllRoles(),
+    getAllStates(),
+    getAllStatus(),
+  ]);
 
   return (
     <div>

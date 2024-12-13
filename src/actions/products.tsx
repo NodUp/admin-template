@@ -1,9 +1,9 @@
 'use server';
 
-import { prisma } from '../lib/prisma';
-import { revalidatePath } from 'next/cache';
-
+import { toJson } from '@/utils';
 import type { Products } from '@prisma/client';
+import { revalidatePath } from 'next/cache';
+import { prisma } from '../lib/prisma';
 import { getCompanyId } from './companies';
 
 export const getProducts = async (): Promise<Products[]> => {
@@ -39,25 +39,37 @@ export const getOnlyProducts = async (): Promise<any[]> => {
     ],
   });
 
-  return products;
+  return toJson(products);
 };
 
 export const addProduct = async (formData: any) => {
   const { name } = formData;
   const companyId = await getCompanyId();
 
-  await prisma.products.create({
-    data: {
-      name: name,
-      companyId,
-      stock: {
-        create: {
-          qtd: 0,
+  try {
+    const product = await prisma.products.create({
+      data: {
+        name: name,
+        companyId,
+        stock: {
+          create: {
+            qtd: 0,
+          },
         },
       },
-    },
-  });
-  revalidatePath('/admin/products/*');
+    });
+    revalidatePath('/admin/products/*');
+
+    return {
+      success: true,
+      data: toJson(product),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const getProductById = async (id: string): Promise<Products | null> => {
@@ -67,17 +79,28 @@ export const getProductById = async (id: string): Promise<Products | null> => {
     },
   });
 
-  return product;
+  return toJson(product);
 };
 
 export const editProduct = async (product: any) => {
-  await prisma.products.update({
-    data: product,
-    where: {
-      id: product.id,
-    },
-  });
-  revalidatePath('/admin/products/*');
+  try {
+    const productDb = await prisma.products.update({
+      data: product,
+      where: {
+        id: product.id,
+      },
+    });
+    revalidatePath('/admin/products/*');
+    return {
+      success: true,
+      data: toJson(productDb),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      data: null,
+    };
+  }
 };
 
 export const deleteProduct = async (id: string) => {
@@ -101,15 +124,4 @@ export const deleteProduct = async (id: string) => {
     });
   });
   revalidatePath('/admin/products/*');
-};
-
-export const getAllMovimentations = async (id: string) => {
-  const result = await prisma.$queryRaw`
-    select * from (
-      select 'Entrada' as tipo, qtd, "updateAt", '' as client from "Entries" e where "productId" = ${id}
-      union all 
-      select 'Saída' as tipo, qtd, "updateAt", client  from "Departuries" d where "productId" = ${id}
-    ) as subquery order by "updateAt" desc`;
-
-  return JSON.parse(JSON.stringify(result));
 };

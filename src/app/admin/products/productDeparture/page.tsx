@@ -1,9 +1,19 @@
-import { DataTable } from '@/components/ui/data-table';
-import PathComponent from '@/components/ui/containers/path-component';
-import { columns } from '@/components/columns/columns-product-departure-table';
 import { getDeparturies } from '@/actions/departure';
+import { LoadingPage } from '@/app/loading';
+import { columns } from '@/components/columns/columns-product-departure-table';
+import PathComponent from '@/components/ui/containers/path-component';
+import { DataTable } from '@/components/ui/data-table';
+import { Suspense } from 'react';
 
-export default async function ProductDeparturies() {
+export default function ProductDeparturiesPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <ProductDeparturiesContainer />
+    </Suspense>
+  );
+}
+
+async function ProductDeparturiesContainer() {
   const departuries = await getDeparturies();
 
   return (

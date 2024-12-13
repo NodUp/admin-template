@@ -9,7 +9,7 @@ import { Container } from '@/components/ui/containers/content-container';
 import { FormHeader } from '@/components/ui/containers/form-header';
 import { GridContainer } from '@/components/ui/containers/grid-container';
 
-export default async function UserProfile() {
+export default async function UserProfilePage() {
   const session: SessionData = await getSession();
   const user = await findById(session.id ? session.id : '');
 

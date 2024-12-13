@@ -1,16 +1,28 @@
-import PathComponent from '@/components/ui/containers/path-component';
-import AddProductEntryForm from '@/components/forms/product-entry-form';
 import { getOnlyProducts } from '@/actions/products';
 import { getAllEntriesStatus } from '@/actions/status';
+import { LoadingPage } from '@/app/loading';
+import AddProductEntryForm from '@/components/forms/product-entry-form';
+import PathComponent from '@/components/ui/containers/path-component';
+import { Suspense } from 'react';
 
-export default async function AddProduct() {
-  const products = await getOnlyProducts();
-  const status = await getAllEntriesStatus();
+export default function AddProductPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <AddProductContainer />
+    </Suspense>
+  );
+}
+
+async function AddProductContainer() {
+  const [products, status] = await Promise.all([
+    getOnlyProducts(),
+    getAllEntriesStatus(),
+  ]);
 
   return (
-    <div>
+    <>
       <PathComponent />
       <AddProductEntryForm entry={null} products={products} status={status} />
-    </div>
+    </>
   );
 }

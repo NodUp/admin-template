@@ -3,7 +3,7 @@ import ChangePasswordForm from '@/components/forms/change-password-form';
 import { getSession } from '@/actions/session';
 import { SessionData } from '@/lib/session';
 
-export default async function ChangePassword() {
+export default async function ChangePasswordPage() {
   const session: SessionData = await getSession();
 
   return (

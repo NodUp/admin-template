@@ -1,3 +1,6 @@
+import { Suspense } from 'react';
+import Loading from '../loading';
+
 import UserForm from '@/components/forms/user-form';
 import PublicFooterForm from '@/components/ui/containers/public-footer-form';
 
@@ -8,14 +11,20 @@ import { getAllStatus } from '@/actions/status';
 import { ComponentContainer } from '@/components/ui/containers/component-container';
 import { MainContainer } from '@/components/ui/containers/main-container';
 
-import type { Roles } from '@/actions/roles';
-import type { Status } from '@/actions/status';
-import type { States } from '@prisma/client';
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <SignUpContainer />
+    </Suspense>
+  );
+}
 
-export default async function SignUp() {
-  const roles: Roles[] = await getAllRoles();
-  const states: States[] = await getAllStates();
-  const status: Status[] = await getAllStatus();
+async function SignUpContainer() {
+  const [roles, states, status] = await Promise.all([
+    getAllRoles(),
+    getAllStates(),
+    getAllStatus(),
+  ]);
 
   return (
     <MainContainer>

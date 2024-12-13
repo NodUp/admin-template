@@ -2,26 +2,24 @@
 
 import { useState } from 'react';
 
+import { getAllCities } from '@/actions/cities';
+import { addUser, editUser } from '@/actions/users';
+import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/containers/content-container';
-import { Label } from '@/components/ui/label';
+import { FormHeader } from '@/components/ui/containers/form-header';
 import { GridContainer } from '@/components/ui/containers/grid-container';
 import { Input } from '@/components/ui/input/index';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Label } from '@/components/ui/label';
 import { SelectInput } from '@/components/ui/select/select';
-import { addUser } from '@/actions/users';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
-import { editUser } from '@/actions/users';
-import { getAllCities } from '@/actions/cities';
-import { FormHeader } from '@/components/ui/containers/form-header';
-
+import { useMyToast } from '@/components/ui/use-toast';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import type { Roles } from '@/actions/roles';
 import type { Status } from '@/actions/status';
-import type { States } from '@prisma/client';
-import type { Cities } from '@prisma/client';
+import type { Cities, States } from '@prisma/client';
 
 const createSchema = z
   .object({
@@ -80,7 +78,9 @@ type Props = {
 };
 
 function UserForm({ user, roles, states, cities, status, context }: Props) {
-  const [citiesList, setCitieslist] = useState(cities);
+  const { citiesList, updateCities } = useCities(cities);
+  const { save } = useSave(context);
+  const router = useRouter();
 
   const {
     register,
@@ -91,37 +91,18 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
   } = useForm({
     resolver: zodResolver(user ? updateSchema : createSchema),
     defaultValues: {
-      name: user ? user.person[0].name : '',
-      email: user ? user.email : '',
-      role: user ? user.role : '',
-      stateId: user ? user.person[0].stateId : '',
-      cityId: user ? user.person[0].cityId : '',
-      status: user ? user.status : '',
+      name: user?.person?.[0]?.name || '',
+      email: user?.email || '',
+      role: user?.role || '',
+      stateId: user?.person?.[0]?.stateId || '',
+      cityId: user?.person?.[0]?.cityId || '',
+      status: user?.status || '',
     },
   });
-  const { toast } = useToast();
 
   const onSubmit = async (data: any) => {
-    if (!user) {
-      addUser({
-        ...data,
-        status: context === 'admin' ? 'ATIVO' : 'PENDENTE',
-      });
-      reset();
-    } else {
-      await editUser(user.id, data);
-    }
-
-    toast({
-      title: 'Sucesso !',
-      description: 'Operação realizada!',
-      variant: 'constructive',
-    });
-  };
-
-  const loadCities = async (stateId: string) => {
-    const cities: any = await getAllCities(stateId);
-    setCitieslist(cities);
+    await save(user, data);
+    router.back();
   };
 
   return (
@@ -171,7 +152,7 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
             control={control}
             name='stateId'
             items={states}
-            func={loadCities}
+            func={updateCities}
           />
 
           <Label className=''>Cidade:</Label>
@@ -236,3 +217,35 @@ function UserForm({ user, roles, states, cities, status, context }: Props) {
 }
 
 export default UserForm;
+
+export function useSave(context: string) {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (obj: any, data: any) => {
+    if (!obj) {
+      const { success } = await addUser({
+        ...data,
+        status: context === 'admin' ? 'ATIVO' : 'PENDENTE',
+      });
+      success
+        ? sucessMessage('Usuário cadastrado!')
+        : errorMessage('Erro ao efetuar o cadastro');
+    } else {
+      const { success: editSuccess } = await editUser(obj.id, data);
+      editSuccess
+        ? sucessMessage('Usuário editado!')
+        : errorMessage('Erro ao efetuar a edição');
+    }
+  };
+
+  return { save };
+}
+
+export function useCities(cities: any) {
+  const [citiesList, setCitieslist] = useState(cities);
+
+  const updateCities = async (stateId: string) => {
+    setCitieslist(await getAllCities(stateId));
+  };
+  return { citiesList, updateCities };
+}

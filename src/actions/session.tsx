@@ -12,7 +12,10 @@ type Login = {
 };
 
 export const getSession = async () => {
-  const session = await getIronSession<SessionData>(cookies(), sessionOptions);
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions
+  );
 
   if (!session.isLoggoedIn) {
     session.isLoggoedIn = defaultSession.isLoggoedIn;

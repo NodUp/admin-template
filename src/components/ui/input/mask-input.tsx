@@ -1,31 +1,37 @@
 'use client';
 
-import InputMask from 'react-input-mask';
 import { ErrorMessage } from '@hookform/error-message';
 import { cn } from '@/lib/utils';
 import { Props } from './index';
+import MaskedInput from 'react-text-mask';
+import { Controller } from 'react-hook-form';
 
 const MaskInput = ({
   className,
   name,
   errors,
   placeholder,
-  register,
   mask,
+  control,
 }: Props) => {
   return (
     <div>
-      <InputMask
-        className={cn(
-          `flex h-10 w-full rounded-lg border border-gray-400 px-2 py-2 text-zinc-600 outline-none ${errors[`${name}`] ? 'border-red-700' : ''}`,
-          className
+      <Controller
+        control={control}
+        name={`${name}`}
+        render={({ field }: any) => (
+          <MaskedInput
+            className={cn(
+              `flex h-10 w-full rounded-lg border border-gray-400 px-2 py-2 text-zinc-600 outline-none ${errors[`${name}`] ? 'border-red-700' : ''}`,
+              className
+            )}
+            mask={mask}
+            placeholder={placeholder}
+            value={field.value}
+            onChange={field.onChange}
+            guide={false}
+          />
         )}
-        {...register(`${name}`)}
-        mask={mask}
-        maskChar=' '
-        id={name}
-        name={name}
-        placeholder={placeholder}
       />
       <ErrorMessage
         errors={errors}

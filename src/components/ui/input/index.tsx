@@ -15,7 +15,7 @@ export type Props = {
   errors?: any;
   placeholder?: string;
   register?: any;
-  mask?: string;
+  mask?: any;
   control?: any;
   setValue?: any;
 };
@@ -58,8 +58,8 @@ const Input = ({
         name={name}
         errors={errors}
         placeholder={placeholder}
-        register={register}
         mask={mask}
+        control={control}
       />
     );
   } else if (variant === 'currency') {

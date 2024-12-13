@@ -1,12 +1,23 @@
-import { DataTable } from '@/components/ui/data-table';
+import { getProducts } from '@/actions/products';
+import { LoadingPage } from '@/app/loading';
 import PathComponent from '@/components/ui/containers/path-component';
+import { DataTable } from '@/components/ui/data-table';
+import { Suspense } from 'react';
+
 import {
   Products as ProductType,
   columns,
 } from '@/components/columns/columns-products-table';
-import { getProducts } from '@/actions/products';
 
-export default async function Products() {
+export default async function ProductsPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <ListProductsContainer />
+    </Suspense>
+  );
+}
+
+async function ListProductsContainer() {
   const data: ProductType[] = await getProducts();
 
   return (

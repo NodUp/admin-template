@@ -1,15 +1,15 @@
 'use client';
 
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input/index';
+import { addProduct, editProduct } from '@/actions/products';
+import { Button } from '@/components/ui/button';
 import { Container } from '@/components/ui/containers/content-container';
 import { GridContainer } from '@/components/ui/containers/grid-container';
+import { Input } from '@/components/ui/input/index';
+import { Label } from '@/components/ui/label';
+import { useMyToast } from '@/components/ui/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { addProduct } from '@/actions/products';
-import { editProduct } from '@/actions/products';
-import { useToast } from '@/components/ui/use-toast';
 
 import type { Products } from '@/components/columns/columns-products-table';
 
@@ -26,11 +26,10 @@ type Props = {
   product: Products | null;
 };
 
-export default function AddProductForm({ product }: Props) {
+export default function ProductForm({ product }: Props) {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(schema),
@@ -39,20 +38,12 @@ export default function AddProductForm({ product }: Props) {
     },
   });
 
-  const { toast } = useToast();
+  const { save } = useSave();
+  const router = useRouter();
 
   const onSubmit = async (data: any) => {
-    if (product) {
-      editProduct({ id: product.id, name: data.name });
-    } else {
-      addProduct(data);
-      reset();
-    }
-    toast({
-      title: 'Sucesso !',
-      description: 'Dados cadastrados.',
-      variant: 'constructive',
-    });
+    await save(product, data);
+    router.back();
   };
 
   return (
@@ -86,4 +77,27 @@ export default function AddProductForm({ product }: Props) {
       </form>
     </Container>
   );
+}
+
+export function useSave() {
+  const { sucessMessage, errorMessage } = useMyToast();
+
+  const save = async (obj: any, data: any) => {
+    if (!obj) {
+      const { success } = await addProduct(data);
+      success
+        ? sucessMessage('Produto cadastrado!')
+        : errorMessage('Erro ao efetuar o cadastro');
+    } else {
+      const { success: editSuccess } = await editProduct({
+        id: obj.id,
+        name: data.name,
+      });
+      editSuccess
+        ? sucessMessage('Produto editado!')
+        : errorMessage('Erro ao efetuar a edição');
+    }
+  };
+
+  return { save };
 }

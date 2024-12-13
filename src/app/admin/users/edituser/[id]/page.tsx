@@ -1,24 +1,41 @@
+import { LoadingPage } from '@/app/loading';
 import UserForm from '@/components/forms/user-form';
 import PathComponent from '@/components/ui/containers/path-component';
+import { Suspense } from 'react';
 
-import { getAllRoles } from '@/actions/roles';
-import { findById } from '@/actions/users';
-import { getAllStates } from '@/actions/states';
 import { getAllCities } from '@/actions/cities';
+import { getAllRoles } from '@/actions/roles';
+import { getAllStates } from '@/actions/states';
 import { getAllStatus } from '@/actions/status';
+import { findById } from '@/actions/users';
 
-import type { User } from '@/components/forms/user-form';
-import type { Roles } from '@/actions/roles';
-import type { Status } from '@/actions/status';
-import type { States } from '@prisma/client';
 import type { Cities } from '@prisma/client';
 
-export default async function EditUser({ params }: { params: { id: string } }) {
-  const user: User = await findById(params.id);
-  const roles: Roles[] = await getAllRoles();
-  const states: States[] = await getAllStates();
+export default function EditUserPage({ params }: { params: { id: string } }) {
+  return (
+    <div>
+      <Suspense
+        fallback={
+          <div className='h-[70vh]'>
+            <LoadingPage />
+          </div>
+        }
+      >
+        <EditUserContainer id={params.id} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function EditUserContainer({ id }: { id: string }) {
+  const [roles, states, status, user] = await Promise.all([
+    getAllRoles(),
+    getAllStates(),
+    getAllStatus(),
+    findById(id),
+  ]);
+
   const cities: Cities[] = await getAllCities(user?.person[0].stateId);
-  const status: Status[] = await getAllStatus();
 
   return (
     <div>
