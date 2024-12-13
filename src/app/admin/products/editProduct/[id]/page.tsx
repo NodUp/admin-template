@@ -7,11 +7,11 @@ import { getProductById } from '@/actions/products';
 
 import type { Products } from '@/components/columns/columns-products-table';
 
-export default async function EditProductPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+type Params = Promise<{ id: string }>;
+
+export default async function EditProductPage(props: { params: Params }) {
+  const params = await props.params;
+
   return (
     <Suspense fallback={<LoadingPage />}>
       <EditProductContainer id={params.id} />
