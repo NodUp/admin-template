@@ -8,3 +8,7 @@ export const getString = async (length: number) => {
     .toString('hex')
     .slice(0, length);
 };
+
+export const toJson = async (data: any) => {
+  return JSON.parse(JSON.stringify(data));
+};

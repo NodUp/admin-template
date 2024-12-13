@@ -1,15 +1,26 @@
-import { DataTable } from '@/components/ui/data-table';
-import PathComponent from '@/components/ui/containers/path-component';
-import { columns } from '@/components/columns/columns-product-entries-table';
-import { getEntries } from '@/actions/entry';
+'use server';
 
-export default async function ProductEntries() {
+import { getEntries } from '@/actions/entry';
+import { LoadingPage } from '@/app/loading';
+import { columns } from '@/components/columns/columns-product-entries-table';
+import PathComponent from '@/components/ui/containers/path-component';
+import { DataTable } from '@/components/ui/data-table';
+import { Suspense } from 'react';
+
+export default async function ProductEntriesPage() {
+  return (
+    <Suspense fallback={<LoadingPage />}>
+      <ProductEntriesContainer />
+    </Suspense>
+  );
+}
+
+async function ProductEntriesContainer() {
   const entries = await getEntries();
 
   return (
-    <div>
+    <>
       <PathComponent />
-
       <div className='mt-4 flex justify-center'>
         <DataTable
           columns={columns}
@@ -18,6 +29,6 @@ export default async function ProductEntries() {
           title='Entradas no Estoque'
         />
       </div>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 
+import TrashIcon from '@/assets/icons/trash-icon';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,8 +12,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import TrashIcon from '@/assets/icons/trash-icon';
 
 type Props = {
   title: string;
@@ -34,7 +33,7 @@ function Alert({ title, text, onDelete, type }: Props) {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancelar</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete} className='bg-sky-800/80'>
+          <AlertDialogAction onClick={onDelete} className='bg-rose-800'>
             Continuar
           </AlertDialogAction>
         </AlertDialogFooter>

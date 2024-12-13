@@ -1,8 +1,9 @@
 'use server';
 
-import { prisma } from '../lib/prisma';
-import { revalidatePath } from 'next/cache';
 import { updateData } from '@/lib/firebase';
+import { toJson } from '@/utils';
+import { revalidatePath } from 'next/cache';
+import { prisma } from '../lib/prisma';
 import { getCompanyId } from './companies';
 
 const getSockValue = async (
@@ -170,7 +171,7 @@ export const getEntries = async () => {
     orderBy: [{ updateAt: 'desc' }],
   });
 
-  return entries;
+  return toJson(entries);
 };
 
 export const getEntryById = async (id: string) => {
@@ -183,7 +184,7 @@ export const getEntryById = async (id: string) => {
     },
   });
 
-  return entry;
+  return toJson(entry);
 };
 
 export const deleteEntry = async (id: string, productId: string) => {

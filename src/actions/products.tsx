@@ -1,8 +1,9 @@
 'use server';
 
-import { prisma } from '../lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { prisma } from '../lib/prisma';
 
+import { toJson } from '@/utils';
 import type { Products } from '@prisma/client';
 import { getCompanyId } from './companies';
 
@@ -39,7 +40,7 @@ export const getOnlyProducts = async (): Promise<any[]> => {
     ],
   });
 
-  return products;
+  return toJson(products);
 };
 
 export const addProduct = async (formData: any) => {
