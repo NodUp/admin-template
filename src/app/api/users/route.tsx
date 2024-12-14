@@ -1,6 +1,5 @@
+import { addUser, findAllusers } from '@/actions/users';
 import { NextResponse } from 'next/server';
-import { findAllusers } from '@/actions/users';
-import { addUser } from '@/actions/users';
 
 export async function GET() {
   const users = await findAllusers();

@@ -6,11 +6,11 @@ import AddProductDepartureForm from '@/components/forms/product-departure-form';
 import PathComponent from '@/components/ui/containers/path-component';
 import { Suspense } from 'react';
 
-export default async function EditEntryPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+type Params = Promise<{ id: string }>;
+
+export default async function EditEntryPage(props: { params: Params }) {
+  const params = await props.params;
+
   return (
     <Suspense fallback={<LoadingPage />}>
       <EditEntryContainer id={params.id} />

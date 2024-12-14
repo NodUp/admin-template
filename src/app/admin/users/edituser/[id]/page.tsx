@@ -10,8 +10,11 @@ import { getAllStatus } from '@/actions/status';
 import { findById } from '@/actions/users';
 
 import type { Cities } from '@prisma/client';
+type Params = Promise<{ id: string }>;
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+export default async function EditUserPage(props: { params: Params }) {
+  const params = await props.params;
+
   return (
     <div>
       <Suspense
