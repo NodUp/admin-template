@@ -13,7 +13,7 @@ Main libraries and frameworks
   
 ## Important Note
 
-How is a Nextjs 14 project, you have to use node version 20 or superior
+How is a Nextjs 15 project, you have to use node version 20 or superior
 
 ## Getting Started
 
@@ -59,7 +59,15 @@ npm run dev
 
 ```
 login: admin@template.com.br
+
+
 password: 123456
 ```
 
 8. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Api
+
+This project has an API as an example, to access the API routes, import the postman template below:
+
+[postman api](https://drive.google.com/file/d/1QMuI_wty_BCB0sV2vB0JxWutEzqbbwwr/view?usp=drive_link) 
