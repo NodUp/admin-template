@@ -104,24 +104,28 @@ export const editProduct = async (product: any) => {
 };
 
 export const deleteProduct = async (id: string) => {
-  await prisma.$transaction(async (tx) => {
-    const stock: any = await tx.stocks.findFirst({
-      where: {
-        productId: id,
-      },
-    });
+  try {
+    await prisma.$transaction(async (tx) => {
+      const stock: any = await tx.stocks.findFirst({
+        where: {
+          productId: id,
+        },
+      });
 
-    await tx.stocks.delete({
-      where: {
-        id: stock.id,
-      },
-    });
+      await tx.stocks.delete({
+        where: {
+          id: stock.id,
+        },
+      });
 
-    await tx.products.delete({
-      where: {
-        id: id,
-      },
+      await tx.products.delete({
+        where: {
+          id: id,
+        },
+      });
     });
-  });
-  revalidatePath('/admin/products/*');
+    revalidatePath('/admin/products/*');
+  } catch (error) {
+    console.log(error);
+  }
 };
